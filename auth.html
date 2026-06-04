@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitFlow – Auth</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+
+    /* ========================
+       CSS VARIABLES
+    ======================== */
+    html {
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--color-background);
+  color: var(--color-ink);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;        
+}
+
+.page-wrapper,
+.left-panel,
+.right-panel{
+  min-width:0;
+}
+
+img,
+svg,
+video{
+  max-width:100%;
+}
+    :root {
+      --color-green-dark:  #3a5a40;
+      --color-green-light: #e8f0e9;
+      --color-green-mid:   #a3c4a8;
+      --color-background:  #faf8f4;
+      --color-white:       #ffffff;
+      --color-ink:         #1c1c1a;
+      --color-ink-muted:   #6b6b67;
+      --color-ink-faint:   #c8c7c2;
+      --color-error:       #c0392b;
+    }
+
+    /* ========================
+       RESET & BASE
+    ======================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+   
+
+    /* ========================
+       PAGE WRAPPER
+    ======================== */
+    .page-wrapper {
+      display: flex;
+      width: 100%;
+      max-width: 760px;       
+      height: auto;             
+      border-radius: 16px;    
+      overflow: hidden;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.08);
+        margin: auto; 
+    }
+
+    /* ========================
+       LEFT PANEL
+    ======================== */
+    .left-panel {
+      flex: 1;
+      background: var(--color-green-dark);
+      padding: 36px 32px;     /* Compressed padding from 48px 40px to optimize interface balance */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .app-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;        /* Tuned from 30px */
+      color: var(--color-white);
+      font-weight: 400;
+    }
+
+    .app-logo em {
+      font-style: italic;
+      color: var(--color-green-mid);
+    }
+
+    .left-panel-headline {
+      font-family: 'DM Serif Display', serif;
+        font-size: 28px;      /* Optimized from 36px to handle wrapping safely */
+      color: var(--color-white);
+      line-height: 1.25;
+      font-weight: 400;
+    }
+
+    .left-panel-headline em {
+      font-style: italic;
+      color: var(--color-green-mid);
+    }
+
+    .left-panel-tagline {
+      font-size: 13.5px;
+      color: var(--color-green-mid);
+      margin-top: 10px;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .left-panel-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-green-mid);
+      opacity: 0.4;
+    }
+
+    .dot.active {
+      opacity: 1;
+      background: var(--color-white);
+    }
+
+    /* ========================
+       RIGHT PANEL
+    ======================== */
+    .right-panel {
+      flex: 1;
+      background: var(--color-white);
+     padding: 28px 24px;     /* Moderated padding creates instant safe breathing room */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+       max-height: 100vh; 
+    }
+
+    /* ========================
+       TOGGLE TABS (Login / Sign up)
+    ======================== */
+    .auth-toggle {
+      display: flex;
+      background: var(--color-background);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;    /* Tighter bottom clearance */
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 8px;          /* Cleaned slider line thickness */
+      border: none;
+      border-radius: 9px;
+      background: none;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--color-ink-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+      background: var(--color-white);
+      color: var(--color-green-dark);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* ========================
+       FORM HEADING
+    ======================== */
+    .form-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;        /* Controlled down from 24px */
+      font-weight: 400;
+      color: var(--color-ink);
+      margin-bottom: 2px;
+    }
+
+    .form-subheading {
+      font-size: 12.5px;
+      color: var(--color-ink-muted);
+      margin-bottom: 18px;    /* Brought the fields up gracefully */
+      font-weight: 300;
+    }
+
+    /* ========================
+       FORM SECTIONS
+       JS toggles between these
+    ======================== */
+    .login-section,
+    .signup-section {
+      display: none;
+    }
+
+    .login-section.visible,
+    .signup-section.visible {
+      display: block;
+    }
+
+    /* ========================
+       NAME ROW (side by side)
+    ======================== */
+    .name-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .name-row .form-group {
+      flex: 1;
+    }
+
+    /* ========================
+       FORM FIELDS
+    ======================== */
+    .form-group {
+      margin-bottom: 10px;    /* Tighter vertical grid stack halts text overlaps */
+    }
+
+    .form-label {
+      display: block;
+      font-size: 10.5px;      /* Clean typographic look */
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-ink-muted);
+      margin-bottom: 5px;
+    }
+
+    .form-input {
+      width: 100%;
+      border: 1.5px solid var(--color-ink-faint);
+      border-radius: 8px;     /* Modern styling edge */
+      padding: 10px 12px;     /* Balanced input field width */
+      font-size: 13.5px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--color-ink);
+      background: var(--color-background);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--color-green-dark);
+      background: var(--color-white);
+    }
+    
+    .form-input::placeholder {
+      color: #a5a5a0;
+    }
+
+    /* ========================
+       FORGOT PASSWORD
+    ======================== */
+    .forgot-password-link {
+      display: block;
+      text-align: right;
+      font-size: 11.5px;
+      color: var(--color-green-dark);
+      text-decoration: none;
+      margin-top: -4px;
+      margin-bottom: 14px;
+    }
+
+    .forgot-password-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ========================
+       SUBMIT BUTTON
+    ======================== */
+    .submit-button {
+      width: 100%;
+      background: var(--color-green-dark);
+      color: var(--color-white);
+      border: none;
+      border-radius: 8px;
+      padding: 11px;          /* Clean button profile footprint */
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .submit-button:hover  { background: #2e4a33; }
+    .submit-button:active { transform: scale(0.98); }
+
+    /* ========================
+       ERROR MESSAGE
+    ======================== */
+    .error-message {
+      font-size: 11.5px;
+      color: var(--color-error);
+      margin-top: 8px;
+      text-align: center;
+      min-height: 14px;
+    }
+
+    /* ========================
+       MOBILE
+    ======================== */
+    @media (max-width: 620px) {
+      .left-panel  { display: none; }
+      .right-panel { padding: 28px 20px; max-height: none;  }
+      .page-wrapper { border-radius: 16px;  min-height: 100vh;}
+    }
+    
+    .error-msg {
+      color: #dc3545;    
+      font-size: 0.8rem;
+      display: block;     
+      margin-top: 2px;
+      min-height: 14px;   
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--color-green-dark);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast-hidden {
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+    }
+
+    .toast-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .google-login-btn {
+      width: 100%;
+      background: #f3f3f3;
+      color: var(--color-ink);
+      border: 1px solid var(--color-ink-faint);
+      border-radius: 8px;     /* Matched with input fields */
+      padding: 11px;          /* Perfectly matches layout form button scaling footprint */
+      font-size: 13.5px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      margin-top: 10px;       /* Aligned cleanly to balance space footprint */
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .google-login-btn:hover {
+      background: #ebebeb;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="page-wrapper">
+
+    <!-- ========================
+         LEFT PANEL
+    ======================== -->
+    <div class="left-panel">
+      <div class="app-logo">habit<em>flow</em></div>
+
+      <div>
+        <h2 class="left-panel-headline">
+          Small habits,<br /><em>big results.</em>
+        </h2>
+        <p class="left-panel-tagline">
+          Track your daily habits, build streaks,<br />
+          and watch your consistency grow over time.
+        </p>
+      </div>
+
+      <div class="left-panel-dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+<div id="toast" class="toast-hidden">Welcome back!</div>
+    <div class="right-panel">
+
+      <div class="auth-toggle">
+        <button class="toggle-btn active" id="login-tab" onclick="showLogin()">Log in</button>
+        <button class="toggle-btn"        id="signup-tab" onclick="showSignup()">Sign up</button>
+      </div>
+
+      
+      <div class="login-section visible" id="login-section">
+        <h1 class="form-heading">Welcome back</h1>
+        <p class="form-subheading">Log in to continue your streaks</p>
+
+        <form id="loginform" >
+
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email</label>
+            <input class="form-input" type="email" id="login-email" name="email" placeholder="andex@gmail.com" required />
+                        <small id="loginEmailError" class="error-msg"></small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input class="form-input" type="password" id="login-password" name="password" placeholder="••••••••" required />
+              <small id="loginPasswordError" class="error-msg"></small>
+          </div>
+
+          <a class="forgot-password-link" href="#">Forgot password?</a>
+
+          <button class="submit-button" type="submit">Log in →</button>
+<button type="button" id="google-login-btn" class="google-login-btn">
+  Continue with Google
+</button>
+
+          <p class="error-message" id="login-error"></p>
+
+        </form>
+      </div>
+
+      
+      <div class="signup-section" id="signup-section">
+        <h1 class="form-heading">Create account</h1>
+        <p class="form-subheading">Start building better habits today</p>
+
+        <form id="signupform" >
+
+          <div class="name-row">
+            <div class="form-group">
+              <label class="form-label" for="signup-firstname">First name</label>
+              <!-- <input class="form-input" type="text" name="firstname" placeholder="Bankole" required /> -->
+               <input class="form-input" type="text" id="signup-firstname" name="firstname" placeholder="Bankole" required />
+
+              <small id="firstname-error" class="error-msg"></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signup-lastname">Last name</label>
+              <input class="form-input" type="text" id="signup-lastname" name="lastname" placeholder="wasiu" required />
+              <small id="lastname-error" class="error-msg"></small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-email">Email</label>
+            <input class="form-input" type="email" id="signup-email" name="email" placeholder="bankole@gmail.com" required />
+            <small id="email-error" class="error-msg"></small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-password">Password</label>
+            <input class="form-input" type="password" id="signup-password" name="password" placeholder="min 6 characters" required />
+            <small id="password-error" class="error-msg"></small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-confirm-password">Confirm password</label>
+            <input class="form-input" type="password" id="signup-confirm-password" name="confirmpassword" placeholder="repeat password" required />
+            <small id="confirmpassword-error" class="error-msg"></small>
+          </div>
+
+          <button class="submit-button" type="submit" id="submitBtn">Create account →</button>
+
+          <p class="error-message" id="signup-error"></p>
+          <!-- Put this right below your form's submit button -->
+<button type="button" id="google-btn" class="google-login-btn"> 
+  Sign in with Google
+</button>
+
+        </form>
+      </div>
+
+    </div>
+    <!-- end right-panel -->
+
+  </div>
+  <!-- end page-wrapper -->
+
+
+  <script>
+
+   
+function showLogin(){
+    document.getElementById('login-tab').classList.add('active');
+      document.getElementById('signup-tab').classList.remove('active');
+           document.getElementById('login-section').classList.add('visible');
+           document.getElementById('signup-section').classList.remove('visible');  
+    
+}
+
+    function showSignup() {
+      document.getElementById('signup-section').classList.add('visible');
+      document.getElementById('login-section').classList.remove('visible');
+      document.getElementById('signup-tab').classList.add('active');
+      document.getElementById('login-tab').classList.remove('active');
+      clearErrors();
+    }
+
+    function clearErrors() {
+      document.getElementById('login-error').textContent  = '';
+      document.getElementById('signup-error').textContent = '';
+    }
+
+
+    
+  </script>
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,signInWithPopup, GoogleAuthProvider  } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyC6zD7HVlnZzZ8vX7keE-QttGTqTiXmox0",
+    authDomain: "habit-tracker-83607.firebaseapp.com",
+    projectId: "habit-tracker-83607",
+    storageBucket: "habit-tracker-83607.firebasestorage.app",
+    messagingSenderId: "989957875149",
+    appId: "1:989957875149:web:f635ddda1b8db0ce14d084",
+    measurementId: "G-KKJHBLL031"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+const auth = getAuth(app)
+const signupform = document.getElementById('signupform')
+signupform.addEventListener('submit', async(e)=>{
+e.preventDefault()
+
+const firstNameError = document.getElementById('firstname-error');
+const lastNameError = document.getElementById('lastname-error');
+  const emailError = document.getElementById('email-error');
+  const passwordError = document.getElementById('password-error');
+  const confirmPasswordError = document.getElementById('confirmpassword-error');
+
+  firstNameError.textContent = "";
+  lastNameError.textContent = "";
+  emailError.textContent = "";
+  passwordError.textContent = "";
+  confirmPasswordError.textContent = "";
+
+let firstName = signupform.firstname.value.trim();
+let lastName = signupform.lastname.value.trim();
+let email = signupform.email.value.trim();
+let password = signupform.password.value.trim()
+let confirmPassword = signupform.confirmpassword.value.trim();
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?]).{8,}$/;
+
+let isValid = true;
+if (firstName === "") {
+firstNameError.textContent = "firstname is required.";
+    isValid = false;
+  }
+  if (lastName === "") {
+  lastNameError.textContent = "Last name is required.";
+  isValid = false;
+}
+  if (!emailRegex.test(email)) {
+emailError.textContent = "Please enter a valid email address.";
+    isValid = false;
+  }
+  if (!passwordRegex.test(password)) {
+passwordError.textContent = "Must be 8+ characters with at least 1 letter and 1 number.";
+    isValid = false;
+  }
+  if (password !== confirmPassword) {
+confirmPasswordError.textContent = "Passwords do not match.";
+    isValid = false;
+  }
+  if (!isValid) {
+  return;
+}
+
+try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+signupform.reset();
+
+      window.location.href = './dashboard.html'
+}
+
+catch (error) {
+  console.log("Error code:", error.code);
+ if (error.code === 'auth/email-already-in-use') {
+
+  emailError.textContent = "Email already exists.";
+
+} 
+else if (error.code === 'auth/invalid-email') {
+
+  emailError.textContent = "Invalid email address.";
+
+}
+else if (error.code === 'auth/weak-password') {
+
+  passwordError.textContent = "Password is too weak.";
+
+}
+else {
+
+  alert('An unexpected error occurred. Please try again.');
+
+}
+}
+})
+const loginform = document.getElementById('loginform')
+loginform.addEventListener('submit', async(e)=>{
+e.preventDefault()
+const loginEmailError = document.getElementById('loginEmailError');
+  const loginPasswordError = document.getElementById('loginPasswordError');
+
+  loginEmailError.textContent =""
+  loginPasswordError.textContent = ""
+
+  let email = loginform.email.value.trim();
+  let password = loginform.password.value.trim();
+
+  if (email === "" || password === "") {
+    loginEmailError.textContent = "Please fill in all fields.";
+    return;
+  }try {
+
+const logInCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = logInCredential.user;
+const userName = user.displayName || user.email.split('@')[0];
+
+loginform.reset();
+
+const toast = document.getElementById('toast');
+toast.textContent = `👋 Welcome back, ${userName}!`;
+toast.className = "toast-visible";
+
+
+  setTimeout(() => {
+     toast.className = "toast-hidden";
+    window.location.href = './dashboard.html';
+  }, 1500);
+  } catch (error) {
+    console.log(" Error Code:", error.code);
+
+    if (error.code === 'auth/invalid-credential') {
+      loginEmailError.textContent = "Invalid email or password.";
+    } else if (error.code === 'auth/too-many-requests') {
+      loginEmailError.textContent = "Access temporarily blocked due to many failed attempts. Try again later.";
+    } else {
+      loginEmailError.textContent = "An error occurred. Please try again.";
+    }
+  }
+
+
+
+})
+
+
+const googleProvider = new GoogleAuthProvider();
+
+const googleSignupBtn = document.getElementById('google-btn');
+const googleLoginBtn = document.getElementById('google-login-btn');
+
+async function handleGoogleLogin() {
+
+  const toast = document.getElementById('toast');
+
+  try {
+
+    const result = await signInWithPopup(auth, googleProvider);
+
+    const user = result.user;
+
+    toast.textContent = `Welcome, ${user.displayName || 'back'}!`;
+
+    toast.classList.remove("toast-hidden");
+    toast.classList.add("toast-visible");
+
+    setTimeout(() => {
+      window.location.href = './dashboard.html';
+    }, 1500);
+
+  } catch (error) {
+
+    console.error("Google Auth Error Code:", error.code);
+    console.error("Google Auth Error Message:", error.message);
+
+    if (error.code === 'auth/popup-closed-by-user') {
+
+      alert("Sign-in cancelled. The login window was closed before finishing.");
+
+    } else {
+
+      alert("Something went wrong with Google Sign-In. Please try again.");
+
+    }
+
+  }
+
+}
+
+googleSignupBtn.addEventListener('click', handleGoogleLogin);
+
+googleLoginBtn.addEventListener('click', handleGoogleLogin);
+
+</script>
+
+</body>
+</html>
